@@ -60,6 +60,25 @@ body {
     font-size: 14px;
     width: 70%;
 }
+#search-results {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 250px;
+    z-index: 1000;
+    display: none;
+}
+
+.search-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+.search-item:hover {
+    background-color: #f0f0f0;
+}
 
 #search-btn {
     padding: 5px 10px;

@@ -4,6 +4,7 @@ var map = L.map('map').setView([21.0285, 105.8542], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
+//dữ liệu toạ độ
 var historic = [
     { "ten": "Văn Miếu Quốc Tử Giám", "lat": 21.0281, "lng": 105.8356,
         "diachi": "Số 58 phố Quốc Tử Giám, phường Văn Miếu, quận Đống Đa, Hà Nội.",
@@ -103,7 +104,7 @@ var historic = [
     },
 
 ];
-
+//hiển thị poup
 var markers = [];
 function addMarkers(data) {
     markers.forEach(m => map.removeLayer(m.marker));
@@ -127,24 +128,20 @@ function addMarkers(data) {
 
 addMarkers(historic);
 
-document.getElementById("search-btn").addEventListener("click", function() {
-    var searchText = document.getElementById("search").value.toLowerCase();
-    var filteredData = historic.filter(xem => xem.ten.toLowerCase().includes(searchText));
-    addMarkers(filteredData);
-});
+//đinhk vị bản thân
 document.getElementById("locate-btn").addEventListener("click", function() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
             var userLat = position.coords.latitude;
             var userLng = position.coords.longitude;
 
-            // Thêm hoặc cập nhật marker vị trí người dùng
+            
             if (window.userMarker) {
                 map.removeLayer(window.userMarker);
             }
             window.userMarker = L.marker([userLat, userLng], {
                 icon: L.icon({
-                    iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png", // Icon vị trí người dùng
+                    iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png", 
                     iconSize: [30, 30]
                 })
             }).addTo(map).bindPopup("Vị trí của bạn").openPopup();
@@ -158,6 +155,70 @@ document.getElementById("locate-btn").addEventListener("click", function() {
     }
 });
 
+var streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+// thêm lớp bản đôg vệ tinh tưg google satellite
+var satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+    attribution: '&copy; <a href="https://www.google.com/maps">Google Maps</a>'
+});
+
+// chuyển đổi lớp bản đồ
+var baseMaps = {
+    "Bản đồ đường phố": streetLayer,
+    "Bản đồ vệ tinh": satelliteLayer
+};
+L.control.layers(baseMaps).addTo(map);
+
+//hiển thị tỉ lệ bản đồ
+L.control.scale({
+    position: 'bottomleft', 
+    metric: true, 
+    imperial: false 
+}).addTo(map);
+
+//tìm kiếm 
+var searchInput = document.getElementById("search");
+var searchResults = document.getElementById("search-results");
+
+searchInput.addEventListener("input", function () {
+    var searchText = searchInput.value.toLowerCase();
+    searchResults.innerHTML = "";
+    
+    if (searchText === "") {
+        addMarkers(historic); 
+        searchResults.style.display = "none";
+        return;
+    }
+    
+    var filteredData = historic.filter(xem => xem.ten.toLowerCase().includes(searchText));
+    addMarkers(filteredData);
+    
+    if (filteredData.length > 0) {
+        searchResults.style.display = "block";
+        filteredData.forEach(function (xem) {
+            var item = document.createElement("div");
+            item.classList.add("search-item");
+            item.textContent = xem.ten;
+            item.addEventListener("click", function () {
+                searchInput.value = xem.ten;
+                searchResults.style.display = "none";
+                addMarkers([xem]);
+                map.setView([xem.lat, xem.lng], 17);
+            });
+            searchResults.appendChild(item);
+        });
+    } else {
+        searchResults.style.display = "none";
+    }
+});
+
+document.addEventListener("click", function (e) {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.style.display = "none";
+    }
+});
 
 
-
+document.head.appendChild(style);
